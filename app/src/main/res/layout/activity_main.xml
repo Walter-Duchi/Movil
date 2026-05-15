@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- Fondo que mantiene proporciones -->
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
@@ -16,7 +15,6 @@
         android:src="?android:windowBackground"
         android:contentDescription="@string/fondo_desc" />
 
-    <!-- Contenedor principal con ScrollView para pantallas pequeñas -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,7 +25,6 @@
             android:layout_height="wrap_content"
             android:padding="24dp">
 
-            <!-- Grupo info -->
             <TextView
                 android:id="@+id/textViewGrupoInfo"
                 android:layout_width="0dp"
@@ -41,7 +38,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Título principal -->
             <TextView
                 android:id="@+id/textViewTituloProyecto"
                 android:layout_width="wrap_content"
@@ -55,7 +51,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textViewGrupoInfo" />
 
-            <!-- Logo -->
             <ImageView
                 android:id="@+id/imageViewLogo"
                 android:layout_width="150dp"
@@ -67,7 +62,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/textViewTituloProyecto"
                 app:srcCompat="@drawable/icon" />
 
-            <!-- Campo usuario -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textFieldUsername"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -90,7 +84,6 @@
                     android:textColorHint="?android:textColorSecondary" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Campo contraseña -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textFieldPassword"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -117,10 +110,8 @@
                     android:id="@+id/mantenerSesion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Mantener Sesión" />
+                    android:text="@string/sesion" />
             </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Botón login -->
 
             <Button
                 android:id="@+id/buttonLogin"
@@ -136,7 +127,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textFieldPassword" />
 
-            <!-- Botón Crear Cuenta -->
             <Button
                 android:id="@+id/buttonCreateAccount"
                 android:layout_width="0dp"
@@ -150,6 +140,32 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/buttonLogin"
                 app:layout_constraintTop_toTopOf="@+id/buttonLogin" />
+
+            <TextView
+                android:id="@+id/textViewTestUserInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="@string/test_user_info"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/buttonLogin" />
+
+            <Button
+                android:id="@+id/buttonTestLogin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/teal_700"
+                android:text="@string/test_login_button"
+                android:textColor="@color/text_color_light"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textViewTestUserInfo" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

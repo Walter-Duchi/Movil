@@ -5,10 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log; // Importar Log
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,21 +20,23 @@ import com.google.android.material.textfield.TextInputEditText;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity"; // Para logs
+    private static final String TAG = "MainActivity";
 
     private TextInputEditText editTextUsername;
     private TextInputEditText editTextPassword;
     private Button buttonLogin;
     private Button buttonCreateAccount;
     private CheckBox checkboxKeepLoggedIn;
+    private TextView textViewTestUserInfo;
+    private Button buttonTestLogin;
 
     private static final String PREFS_NAME = "LoginPrefs";
     private static final String PREF_USERNAME = "username";
-    private static final String PREF_PASSWORD = "password"; // Guardar contraseña es inseguro, pero para el ejemplo
+    private static final String PREF_PASSWORD = "password";
     private static final String PREF_KEEP_LOGGED_IN = "keepLoggedIn";
 
     private SharedPreferences sharedPreferences;
-    private DatabaseHelper dbHelper; // Añadir referencia al DatabaseHelper
+    private DatabaseHelper dbHelper;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -43,18 +46,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        dbHelper = new DatabaseHelper(this); // Inicializar DatabaseHelper
+        dbHelper = new DatabaseHelper(this);
 
         editTextUsername = findViewById(R.id.editTextUsername);
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonLogin = findViewById(R.id.buttonLogin);
         buttonCreateAccount = findViewById(R.id.buttonCreateAccount);
-        checkboxKeepLoggedIn = findViewById(R.id.mantenerSesion); // Asegúrate que este ID exista en activity_main.xml
+        checkboxKeepLoggedIn = findViewById(R.id.mantenerSesion);
+        textViewTestUserInfo = findViewById(R.id.textViewTestUserInfo);
+        buttonTestLogin = findViewById(R.id.buttonTestLogin);
 
-        // Cargar credenciales guardadas si "mantener sesión" estaba activo
         loadSavedCredentialsIfKept();
-
-        checkSavedLogin(); // Esta función decidirá si ir a Home directamente
+        checkSavedLogin();
 
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,6 +74,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        buttonTestLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editTextUsername.setText("admin");
+                editTextPassword.setText("pass123");
+                checkboxKeepLoggedIn.setChecked(true);
+                validateLoginWithDatabase();
+            }
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -82,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
         boolean keepLoggedIn = sharedPreferences.getBoolean(PREF_KEEP_LOGGED_IN, false);
         if (keepLoggedIn) {
             String savedUsername = sharedPreferences.getString(PREF_USERNAME, "");
-            String savedPassword = sharedPreferences.getString(PREF_PASSWORD, ""); // Recuperar contraseña guardada
+            String savedPassword = sharedPreferences.getString(PREF_PASSWORD, "");
             editTextUsername.setText(savedUsername);
-            editTextPassword.setText(savedPassword); // Opcional: no mostrar la contraseña guardada
+            editTextPassword.setText(savedPassword);
             checkboxKeepLoggedIn.setChecked(true);
         }
     }
@@ -95,10 +108,6 @@ public class MainActivity extends AppCompatActivity {
         String savedPassword = sharedPreferences.getString(PREF_PASSWORD, null);
 
         if (keepLoggedIn && savedUsername != null && savedPassword != null) {
-            // Para "mantener sesión iniciada", podríamos confiar en SharedPreferences
-            // o re-validar contra la BD para mayor seguridad (ej. si la contraseña cambió).
-            // Por simplicidad, si está guardado y "keepLoggedIn" es true, asumimos que es válido.
-            // En un escenario real, podrías querer llamar a dbHelper.checkUser(savedUsername, savedPassword) aquí.
             Log.i(TAG, "Mantener sesión activado para: " + savedUsername);
             Toast.makeText(MainActivity.this, "Bienvenido de vuelta, " + savedUsername + "!", Toast.LENGTH_SHORT).show();
             navigateToHome();
@@ -109,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void validateLoginWithDatabase() {
         String enteredUsername = editTextUsername.getText() != null ? editTextUsername.getText().toString().trim() : "";
-        String enteredPassword = editTextPassword.getText() != null ? editTextPassword.getText().toString() : ""; // No usar trim() en contraseñas
+        String enteredPassword = editTextPassword.getText() != null ? editTextPassword.getText().toString() : "";
         boolean keepLoggedIn = checkboxKeepLoggedIn.isChecked();
 
         if (enteredUsername.isEmpty()) {
@@ -131,10 +140,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.w(TAG, "Login fallido para: " + enteredUsername);
             Toast.makeText(MainActivity.this, getString(R.string.datos_incorrectos), Toast.LENGTH_SHORT).show();
-            // Opcionalmente, limpiar el campo de contraseña tras un intento fallido
             editTextPassword.setText("");
-            // Asegurarse de que no se guarden credenciales incorrectas si "keepLoggedIn" estaba marcado
-            saveOrClearCredentials(null, null, false); // Limpiar cualquier credencial guardada previamente
+            saveOrClearCredentials(null, null, false);
         }
     }
 
@@ -145,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Guardando credenciales para: " + username + " con 'mantener sesión'.");
             editor.putBoolean(PREF_KEEP_LOGGED_IN, true);
             editor.putString(PREF_USERNAME, username);
-            editor.putString(PREF_PASSWORD, password); // ¡Guardar contraseña en SharedPreferences es inseguro!
+            editor.putString(PREF_PASSWORD, password);
         } else {
             Log.i(TAG, "Limpiando credenciales guardadas.");
             editor.remove(PREF_KEEP_LOGGED_IN);
@@ -156,15 +163,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateToHome() {
-        Intent intent = new Intent(MainActivity.this, Home.class); // Asumo que tienes una Home.class
+        Intent intent = new Intent(MainActivity.this, Home.class);
         startActivity(intent);
-        finish(); // Finaliza MainActivity para que el usuario no pueda volver con el botón "atrás"
+        finish();
     }
 
     @Override
     protected void onDestroy() {
         if (dbHelper != null) {
-            dbHelper.close(); // Cierra la conexión a la base de datos
+            dbHelper.close();
         }
         super.onDestroy();
     }

@@ -86,7 +86,6 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
-    <!-- Sección de colores -->
     <string name="titulo_colores">¡Aprendamos los Colores!</string>
     <string name="rojo">Rojo</string>
     <string name="azul">Azul</string>
@@ -103,7 +102,6 @@
     <string name="reproducir_todos">Reproducir Todos</string>
     <string name="imagen_color_desc">Imagen representativa del color</string>
 
-    <!-- Sección de números -->
     <string name="titulo_juego_numeros">¡Ordena los Números!</string>
     <string name="racha_inicial">Racha: %d</string>
     <string name="intentos_inicial">Intentos restantes: %d</string>
@@ -115,24 +113,20 @@
     <string name="incorrecto">Incorrecto.</string>
     <string name="mensaje_juego_terminado_fallo_simple">¡Oh no! Te quedaste sin intentos.\nLa racha se reinicia a 0.</string>
 
-    <!-- Registrar Activity Simplified -->
     <string name="hint_username">Nombre de Usuario</string>
     <string name="hint_password">Contraseña</string>
-
 
     <string name="radio_masculino">Masculino</string>
     <string name="radio_femenino">Femenino</string>
     <string name="radio_otro_genero">Otro</string>
 
-
-    <!-- Error/Success Messages -->
     <string name="error_campo_requerido">Este campo es requerido</string>
     <string name="error_seleccionar_genero">Por favor seleccione su género.</string>
     <string name="error_password_corta">La contraseña debe tener al menos 6 caracteres.</string>
 
     <string name="registro_exitoso_db">Usuario %1$s registrado exitosamente en la base de datos.</string>
     <string name="error_registro_db">Error al registrar usuario. El nombre de usuario podría ya existir.</string>
-    <!-- Strings used for fragments for navigation -->
+
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
@@ -175,4 +169,6 @@
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
 
+    <string name="test_user_info">Usuario de prueba: admin / pass123</string>
+    <string name="test_login_button">Ingresar con usuario de prueba</string>
 </resources>

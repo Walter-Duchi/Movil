@@ -13,12 +13,11 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
-    private static final String DATABASE_NAME = "user_app.db"; // Cambiado para evitar confusión
-    private static final int DATABASE_VERSION = 2; // Incrementar si cambias schema
+    private static final String DATABASE_NAME = "user_app.db";
+    private static final int DATABASE_VERSION = 2;
 
-    // Tabla Usuarios (existente)
     public static final String TABLE_USERS = "users";
-    public static final String COLUMN_USER_ID = "_id"; // Renombrado para consistencia
+    public static final String COLUMN_USER_ID = "_id";
     public static final String COLUMN_USERNAME = "username";
     public static final String COLUMN_PASSWORD = "password";
     public static final String COLUMN_DOB = "date_of_birth";
@@ -33,7 +32,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_GENDER + " TEXT NOT NULL" +
                     ");";
 
-    // Nueva Tabla Rutinas
     public static final String TABLE_ROUTINES = "routines";
     public static final String COLUMN_ROUTINE_ID = "_id";
     public static final String COLUMN_ROUTINE_NAME = "name";
@@ -44,9 +42,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_ROUTINE_NAME + " TEXT NOT NULL UNIQUE" +
                     ");";
 
-    // Nueva Tabla Rutinas Seleccionadas por Usuario
     public static final String TABLE_USER_SELECTED_ROUTINES = "user_selected_routines";
-    public static final String COLUMN_USR_ID = "_id"; // USR = User Selected Routine
+    public static final String COLUMN_USR_ID = "_id";
     public static final String COLUMN_USR_USER_ID_FK = "user_id";
     public static final String COLUMN_USR_ROUTINE_ID_FK = "routine_id";
     public static final String COLUMN_USR_IS_COMPLETED = "is_completed";
@@ -56,10 +53,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_USR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_USR_USER_ID_FK + " INTEGER NOT NULL, " +
                     COLUMN_USR_ROUTINE_ID_FK + " INTEGER NOT NULL, " +
-                    COLUMN_USR_IS_COMPLETED + " INTEGER NOT NULL DEFAULT 0, " + // 0 for false, 1 for true
+                    COLUMN_USR_IS_COMPLETED + " INTEGER NOT NULL DEFAULT 0, " +
                     "FOREIGN KEY(" + COLUMN_USR_USER_ID_FK + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + ") ON DELETE CASCADE, " +
                     "FOREIGN KEY(" + COLUMN_USR_ROUTINE_ID_FK + ") REFERENCES " + TABLE_ROUTINES + "(" + COLUMN_ROUTINE_ID + ") ON DELETE CASCADE, " +
-                    "UNIQUE (" + COLUMN_USR_USER_ID_FK + ", " + COLUMN_USR_ROUTINE_ID_FK + ")" + // Un usuario no puede seleccionar la misma rutina dos veces
+                    "UNIQUE (" + COLUMN_USR_USER_ID_FK + ", " + COLUMN_USR_ROUTINE_ID_FK + ")" +
                     ");";
 
 
@@ -75,9 +72,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.i(TAG, "Table created: " + TABLE_ROUTINES);
         db.execSQL(TABLE_USER_SELECTED_ROUTINES_CREATE);
         Log.i(TAG, "Table created: " + TABLE_USER_SELECTED_ROUTINES);
-
-        // Opcional: Poblar con algunas rutinas iniciales si la tabla está vacía
-        // addInitialRoutines(db);
     }
 
     @Override
@@ -94,12 +88,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
         if (!db.isReadOnly()) {
-            // Habilitar el soporte de claves foráneas
             db.execSQL("PRAGMA foreign_keys=ON;");
+        }
+        ensureTestUser(db);
+    }
+
+    private void ensureTestUser(SQLiteDatabase db) {
+        Cursor cursor = db.query(TABLE_USERS,
+                new String[]{COLUMN_USER_ID},
+                COLUMN_USERNAME + " = ?",
+                new String[]{"admin"},
+                null, null, null);
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+
+        if (!exists) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_USERNAME, "admin");
+            values.put(COLUMN_PASSWORD, "pass123");
+            values.put(COLUMN_DOB, "01/01/2000");
+            values.put(COLUMN_GENDER, "Otro");
+            long newId = db.insert(TABLE_USERS, null, values);
+            if (newId != -1) {
+                Log.i(TAG, "Usuario de prueba 'admin' creado con contraseña 'pass123'.");
+            } else {
+                Log.e(TAG, "No se pudo crear el usuario de prueba 'admin'.");
+            }
+        } else {
+            Log.d(TAG, "Usuario de prueba 'admin' ya existe.");
         }
     }
 
-    // --- Métodos para Usuarios (existentes, ligeramente modificados) ---
     public long addUser(String username, String password, String dob, String gender) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -140,16 +159,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userId;
     }
 
-
-    // --- Métodos para Rutinas (TABLE_ROUTINES) ---
-
     public long addRoutine(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_ROUTINE_NAME, name);
         long id = db.insertWithOnConflict(TABLE_ROUTINES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         db.close();
-        return id; // Retorna el ID de la nueva fila, o -1 si ocurrió un error, o el ID existente si hubo conflicto y se ignoró
+        return id;
     }
 
     public List<Routine> getAllRoutines() {
@@ -180,34 +196,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void deleteRoutine(long routineId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        // La eliminación en cascada debería manejar TABLE_USER_SELECTED_ROUTINES
         db.delete(TABLE_ROUTINES, COLUMN_ROUTINE_ID + " = ?", new String[]{String.valueOf(routineId)});
         db.close();
     }
-
-    // --- Métodos para Rutinas Seleccionadas por Usuario (TABLE_USER_SELECTED_ROUTINES) ---
 
     public boolean addUserSelectedRoutine(long userId, long routineId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_USR_USER_ID_FK, userId);
         values.put(COLUMN_USR_ROUTINE_ID_FK, routineId);
-        values.put(COLUMN_USR_IS_COMPLETED, 0); // Por defecto no completada
+        values.put(COLUMN_USR_IS_COMPLETED, 0);
         long result = db.insertWithOnConflict(TABLE_USER_SELECTED_ROUTINES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         db.close();
-        return result != -1; // Retorna true si la inserción fue exitosa
+        return result != -1;
     }
 
     public List<UserSelectedRoutine> getUserSelectedRoutines(long userId) {
         List<UserSelectedRoutine> selectedRoutines = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        // Consulta con JOIN para obtener el nombre de la rutina
         String query = "SELECT usr." + COLUMN_USR_ID + ", usr." + COLUMN_USR_USER_ID_FK + ", usr." + COLUMN_USR_ROUTINE_ID_FK +
                 ", r." + COLUMN_ROUTINE_NAME + ", usr." + COLUMN_USR_IS_COMPLETED +
                 " FROM " + TABLE_USER_SELECTED_ROUTINES + " usr" +
                 " JOIN " + TABLE_ROUTINES + " r ON usr." + COLUMN_USR_ROUTINE_ID_FK + " = r." + COLUMN_ROUTINE_ID +
                 " WHERE usr." + COLUMN_USR_USER_ID_FK + " = ?" +
-                " ORDER BY r." + COLUMN_ROUTINE_NAME + " ASC"; // O por algún orden de preferencia
+                " ORDER BY r." + COLUMN_ROUTINE_NAME + " ASC";
 
         Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
 
@@ -248,10 +260,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void resetUserRoutineProgress(long userId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_USR_IS_COMPLETED, 0); // Marcar todas como no completadas
+        values.put(COLUMN_USR_IS_COMPLETED, 0);
         db.update(TABLE_USER_SELECTED_ROUTINES, values, COLUMN_USR_USER_ID_FK + " = ?", new String[]{String.valueOf(userId)});
         db.close();
     }
-
-
 }
